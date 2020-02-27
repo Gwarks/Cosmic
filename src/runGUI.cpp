@@ -1,14 +1,15 @@
 #include "runGUI.hpp"
-#include <fstream>
 
 
-uint8_t memory[65536] = {};
+
 
 
 static MemoryEditor ramEdit;
 static Logger debugLog;
 
 static char editorText[256 * 1000] = "";
+
+cossys system = cossys();
 
 /** Globals to show and hide windows **/
 bool showGraphics = false;

@@ -8,8 +8,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <GL/gl3w.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -27,9 +25,10 @@
 * that avoids using a centralized stationary memory location. 
 */
 
-
+/*
 static MemoryEditor ramEdit;
 static Logger debugLog;
+*/
 runGUI gui;
 runCLI cli;
 

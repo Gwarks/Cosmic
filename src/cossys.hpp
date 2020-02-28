@@ -13,18 +13,15 @@
 #include <string>
 
 #include "cosproc.hpp"
-#include "memory.hpp"
 
 
 /* Holds the system for Cosmic, everything that would be on a motherboard lives here */
 
 class cossys{
     public:
-        memory mem;
+        cosmem mem;
         cosproc proc;
         cossys();
-        friend void MemoryWrite(uint16_t address, uint8_t value);
-        friend uint8_t MemoryRead(uint16_t address);
 
 
 };

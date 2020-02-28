@@ -15,23 +15,29 @@
 #include <string>
 #include <map>
 
+#include "cosmem.hpp"
+
 /**
  * The processor for the cosmic system
  * 
  * Holds all of the internals for the cosmic processor, instructions, and I/O.
  * 
  */
+
 class cosproc{
     
     private:
 
         //Bus callbacks
+
+        /*
         typedef void (*BusWrite)(uint16_t, uint8_t);
         typedef uint8_t (*BusRead)(uint16_t);
 
         //Read and write callbacks for the bus
         BusWrite Write;
         BusRead Read;
+        */
         
         //Instruction encoding pointers
         typedef uint16_t (cosproc::*Addressing)();
@@ -182,6 +188,8 @@ class cosproc{
         void DECXR(uint16_t src); //Decrement the 16-bit register
 
     public:
+        cosmem mem;
+
         //Public for Debugger Only (Package this up eventually)
         uint16_t pc;  //Program Counter
         uint16_t sp;  //Stack Pointer
@@ -203,7 +211,7 @@ class cosproc{
         };
 
         //Public for System Usage
-        cosproc(BusRead r, BusWrite w);
+        cosproc(cosmem mem);
         void reset();
         Debug cycle();
         void LPI();   //Non Maskable Interrupt

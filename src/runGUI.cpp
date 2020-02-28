@@ -1,9 +1,6 @@
 #include "runGUI.hpp"
 
 
-
-
-
 static MemoryEditor ramEdit;
 static Logger debugLog;
 
@@ -23,7 +20,7 @@ void runGUI::LoadIntoMemory(const char *filepath)
 {
     std::ifstream File;
     File.open(filepath);
-    File.read((char *)sys.memory, 65536);
+    File.read((char *)sys.mem.mem, 65536); //TODO: Fix me to use the read and write
     File.close();
 }
 
@@ -34,7 +31,7 @@ void runGUI::DumpMemory(const char *filepath)
     File.open(filepath);
     for (int i = 0; i < 65536; i++)
     {
-        File << sys.memory[i];
+        File << sys.mem.mem[i]; //TODO: Fix me to use the read and write
     }
 
     File.close();
@@ -84,7 +81,7 @@ void runGUI::Assemble(){
 void runGUI::MemoryEditor(cossys sys){
     ImGui::SetNextWindowSize(ImVec2(530, 280), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(305, 120), ImGuiCond_Once);
-    ramEdit.DrawWindow("Memory Editor", sys.memory, sizeof(uint8_t) * 65536);
+    ramEdit.DrawWindow("Memory Editor", sys.mem.mem, sizeof(uint8_t) * 65536);
     ramEdit.Highlight(sys.proc.pc, sys.proc.pc + 1, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75f, 0.75f, 0.25f, 1.0f)));
 
 }
@@ -411,7 +408,7 @@ int runGUI::run(){
                     case SDLK_m:
                         if (ctrlState)
                         {
-                            memset(sys.memory, 0, sizeof(sys.memory));
+                            memset(sys.mem.mem, 0, sizeof(sys.mem.mem));  //TODO: Don't use memset
                             debugLog.AddLog("Memory Reset\n");
                         }
                         break;
@@ -553,7 +550,7 @@ int runGUI::run(){
         }
         ImGui::SameLine();
         if (ImGui::Button("Memory Reset")){
-            memset(sys.memory, 0, sizeof(sys.memory));
+            memset(sys.mem.mem, 0, sizeof(sys.mem.mem));  //TODO: Memset Bad
             debugLog.AddLog("Memory Reset\n");
             running = false;
         }

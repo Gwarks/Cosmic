@@ -8,10 +8,12 @@
 
 #include "cosproc.hpp"
 
-cosproc::cosproc(BusRead r, BusWrite w)
-{
+cosproc::cosproc(cosmem mem){
+    /*
 	Write = (BusWrite)w;
 	Read = (BusRead)r;
+    */
+    this->mem = mem;
 
 	//Fill InstructionSet with Undefined Opcodes so it don't crash no mo'
 	for(int i = 0;i <= 0xFF; i++){
@@ -244,7 +246,7 @@ void cosproc::reset()
 
 cosproc::Debug cosproc::cycle()
 {
-	uint8_t opcode = Read(pc); //Fetch
+	uint8_t opcode = mem.Read(pc); //Fetch
 	Instruction currentInstruction = InstructionSet[opcode]; //Decode
 	execute(currentInstruction); //Execute
 	Debug debugPackage;
@@ -272,20 +274,20 @@ uint16_t cosproc::IMM(){
 }
 
 uint16_t cosproc::ABS(){
-	uint16_t val =  (Read(pc+1) << 8 | Read(pc+2)); //Return 16bit address of where to look at data
+	uint16_t val =  (mem.Read(pc+1) << 8 | mem.Read(pc+2)); //Return 16bit address of where to look at data
 	return val;
 }
 
 uint16_t cosproc::IND(){
-	uint16_t srcHigh = Read(pc+1) << 8 | Read(pc+2);
+	uint16_t srcHigh = mem.Read(pc+1) << 8 | mem.Read(pc+2);
 	uint16_t srcLow = srcHigh+1;
-	uint16_t val = (Read(srcHigh) << 8 | Read(srcLow));
+	uint16_t val = (mem.Read(srcHigh) << 8 | mem.Read(srcLow));
 	return val;
 
 }
 
 uint16_t cosproc::REG(){
-	return Read(pc + 1);
+	return mem.Read(pc + 1);
 }
 
 /** -= OPCODES =- **/
@@ -303,39 +305,39 @@ void cosproc::HCF(uint16_t src){
 
 /* 0x02 PUSH */
 void cosproc::PUSH(uint16_t src){
-	Write(sp,r[0]);
+	mem.Write(sp,r[0]);
 	sp--;
 }
 
 /* 0x03 POP */
 void cosproc::POP(uint16_t src){
-	r[0] = Read(++sp);
+	r[0] = mem.Read(++sp);
 }
 
 /* 0x04 SWP */
 void cosproc::SWP(uint16_t src){
-	uint8_t temp = r[Read(pc+1)];
-	r[Read(pc+1)] = r[Read(pc+2)];
-	r[Read(pc+2)] = temp;
+	uint8_t temp = r[mem.Read(pc+1)];
+	r[mem.Read(pc+1)] = r[mem.Read(pc+2)];
+	r[mem.Read(pc+2)] = temp;
 }
 
 /* 0x05-0x07 CALL */
 void cosproc::CALL(uint16_t src){
-	Write(sp,(pc & 0xFF));
-	Write(--sp,(pc >> 8) & 0xFF);
+	mem.Write(sp,(pc & 0xFF));
+	mem.Write(--sp,(pc >> 8) & 0xFF);
 	sp--;
-	pc = (Read(src) << 8) | Read(src+1);
+	pc = (mem.Read(src) << 8) | mem.Read(src+1);
 }
 
 /* 0x08 RET */
 void cosproc::RET(uint16_t src){
-	pc = (Read(sp+1) << 8) | Read(sp+2);
+	pc = (mem.Read(sp+1) << 8) | mem.Read(sp+2);
 	sp +=2;
 }
 
 /* 0x10-0x12 ADD */
 void cosproc::ADD(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 
 	unsigned int temp = r[0] + data;
 
@@ -375,8 +377,8 @@ void cosproc::ADDR(uint16_t src){
 
 /* 0x14-0x16 ADDX */
 void cosproc::ADDX(uint16_t src){
-	uint8_t dataHigh = Read(src);
-	uint8_t dataLow = Read(src+1);
+	uint8_t dataHigh = mem.Read(src);
+	uint8_t dataLow = mem.Read(src+1);
 	uint16_t data = ((dataHigh << 8) | dataLow);
 	uint16_t regs = r[0] << 8 | r[1];
 
@@ -427,7 +429,7 @@ void cosproc::ADDXR(uint16_t src){
 
 /* 0x18-0x1A SUB */
 void cosproc::SUB(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 	unsigned int temp = r[0] - data;
 
 	//Set Negative
@@ -465,8 +467,8 @@ void cosproc::SUBR(uint16_t src){
 
 /* 0x1C-0x1E SUBX */
 void cosproc::SUBX(uint16_t src){
-	uint8_t dataHigh = Read(src++);
-	uint8_t dataLow = Read(src);
+	uint8_t dataHigh = mem.Read(src++);
+	uint8_t dataLow = mem.Read(src);
 	uint16_t data = ((dataHigh << 8) | dataLow);
 	uint16_t regs = r[0] << 8 | r[1];
 
@@ -517,7 +519,7 @@ void cosproc::SUBXR(uint16_t src){
 
 /* 0x20-0x22 MUL from Imm/Abs/Ind */
 void cosproc::MUL(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 	unsigned int temp = r[0] * data;
 
 	//Set Negative
@@ -555,7 +557,7 @@ void cosproc::MULR(uint16_t src){
 
 /* 0x24-0x26 MULX from 16-bit Imm/Abs/Ind */
 void cosproc::MULX(uint16_t src){
-	uint16_t data = ((Read(src) << 8) | Read(src+1));
+	uint16_t data = ((mem.Read(src) << 8) | mem.Read(src+1));
 	uint16_t regs = r[0] << 8 | r[1];
 	unsigned int temp =  ((r[0] << 8) | r[1] ) * data;
 
@@ -603,7 +605,7 @@ void cosproc::MULXR(uint16_t src){
 
 /* 0x28-0x2A DIV from Imm/Abs/Ind */
 void cosproc::DIV(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 	if(!data){
 		st[6] = 1;
 		return;
@@ -649,7 +651,7 @@ void cosproc::DIVR(uint16_t src){
 
 /* 0x2C-0x2E DIVX from 16-bit Imm/Abs/Ind */
 void cosproc::DIVX(uint16_t src){
-	uint16_t data = ((Read(src) << 8) | Read(src+1));
+	uint16_t data = ((mem.Read(src) << 8) | mem.Read(src+1));
 	if(!data){
 		st[6] = 1;
 		return;
@@ -705,61 +707,61 @@ void cosproc::DIVXR(uint16_t src){
 
 /* 0x30 MOV to Absolute from Immediate */
 void cosproc::MOVAI(uint16_t src){
-	uint16_t dst = ((Read(pc+2) << 8) | Read(pc+3)); //Get the 16bit destination
-	Write(dst,Read(src)); //Write value of memory at destination
+	uint16_t dst = ((mem.Read(pc+2) << 8) | mem.Read(pc+3)); //Get the 16bit destination
+	mem.Write(dst,mem.Read(src)); //Write value of memory at destination
 }
 
 /* 0x31-0x32 MOV to Absolute from Absolute/Indirect */
 void cosproc::MOVA(uint16_t src){
-	uint16_t dst = ((Read(pc+3) << 8) | Read(pc+4)); //Get the 16bit destination
-	Write(dst,Read(src)); //Write value of memory at destination
+	uint16_t dst = ((mem.Read(pc+3) << 8) | mem.Read(pc+4)); //Get the 16bit destination
+	mem.Write(dst,mem.Read(src)); //Write value of memory at destination
 }
 
 /* 0x33 MOV to Absolute from Reigster */
 void cosproc::MOVAR(uint16_t src){
-	uint16_t dst = ((Read(pc+2) << 8) | Read(pc+3)); //Get the 16bit destination
-	Write(dst,r[src]);  //Write the value of the register to the location
+	uint16_t dst = ((mem.Read(pc+2) << 8) | mem.Read(pc+3)); //Get the 16bit destination
+	mem.Write(dst,r[src]);  //Write the value of the register to the location
 }
 
 /* 0x34 MOV to Indirect from Immediate */
 void cosproc::MOVII(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+2) << 8) | Read(pc+3)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
-	Write(dst, Read(src));
+	uint16_t pre_dst = ((mem.Read(pc+2) << 8) | mem.Read(pc+3)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
 }
 
 /* 0x35-0x36 MOV to Indirect from Absolute/Indirect */
 void cosproc::MOVI(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+3) << 8) | Read(pc+4)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
-	Write(dst, Read(src));
+	uint16_t pre_dst = ((mem.Read(pc+3) << 8) | mem.Read(pc+4)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
 }
 
 /* 0x37 MOV to Indirect from Register */
 void cosproc::MOVIR(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+2) << 8) | Read(pc+3)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
-	Write(dst,r[src]);
+	uint16_t pre_dst = ((mem.Read(pc+2) << 8) | mem.Read(pc+3)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
+	mem.Write(dst,r[src]);
 }
 
 /* 0x38 MOV to Register from Immediate */
 void cosproc::MOVRI(uint16_t src){
-	r[Read(src+1)] = Read(src);
+	r[mem.Read(src+1)] = mem.Read(src);
 }
 
 /* 0x39-0x3A MOV to Register from Absolute/Indirect */
 void cosproc:: MOVR(uint16_t src){
-	r[Read(pc+3)] = Read(src);
+	r[mem.Read(pc+3)] = mem.Read(src);
 }
 
 /* 0x3B MOV to Register from Register */
 void cosproc::MOVRR(uint16_t src){
-	r[Read(pc+2)] = r[src];
+	r[mem.Read(pc+2)] = r[src];
 }
 
 /* 0x3C-0x3E SHL Shift the Accumulator left from Imm/Abs/Ind */
 void cosproc::SHL(uint16_t src){
-	uint8_t shift = Read(src);
+	uint8_t shift = mem.Read(src);
 	if(shift > 8){
 		shift = 8;
 	}
@@ -793,80 +795,80 @@ void cosproc::SHLR(uint16_t src){
 
 /* 0x40 MOVX to Absolute from Immediate */
 void cosproc::MOVXAI(uint16_t src){
-	uint16_t dst = ((Read(src+2) << 8 | Read(src+3))); //Get the 16bit destination
-	Write(dst, Read(src));
-	Write(dst+1, Read(src+1));
+	uint16_t dst = ((mem.Read(src+2) << 8 | mem.Read(src+3))); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
+	mem.Write(dst+1, mem.Read(src+1));
 }
 
 /* 0x41-0x42 MOVX to Absolute from Absolute/Indirect */
 void cosproc::MOVXA(uint16_t src){
-	uint16_t dst = ((Read(pc+3) << 8 | Read(pc+4))); //Get the 16bit destination
-	Write(dst, Read(src));
-	Write(dst+1, Read(src+1));
+	uint16_t dst = ((mem.Read(pc+3) << 8 | mem.Read(pc+4))); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
+	mem.Write(dst+1, mem.Read(src+1));
 }
 
 /* 0x43 MOVX to Absolute from Register */
 void cosproc::MOVXAR(uint16_t src){
-	uint16_t dst = ((Read(pc+2) << 8 | Read(pc+3))); //Get the 16bit destination
+	uint16_t dst = ((mem.Read(pc+2) << 8 | mem.Read(pc+3))); //Get the 16bit destination
 	int reg;
 	src % 2 == 0 ? reg = src : reg = src-1;
 
-	Write(dst, r[reg]);
-	Write(dst+1, r[reg+1]);
+	mem.Write(dst, r[reg]);
+	mem.Write(dst+1, r[reg+1]);
 }
 
 /* 0x44 MOVX to Indirect from Immediate */
 void cosproc::MOVXII(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+3) << 8) | Read(pc+4)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
-	Write(dst, Read(src));
-	Write(dst+1, Read(src+1));
+	uint16_t pre_dst = ((mem.Read(pc+3) << 8) | mem.Read(pc+4)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
+	mem.Write(dst+1, mem.Read(src+1));
 }
 
 /* 0x45-0x46 MOVX to Indirect from Absolute/Indirect */
 void cosproc::MOVXI(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+3) << 8) | Read(pc+4)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
-	Write(dst, Read(src));
-	Write(dst+1, Read(src+1));
+	uint16_t pre_dst = ((mem.Read(pc+3) << 8) | mem.Read(pc+4)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
+	mem.Write(dst, mem.Read(src));
+	mem.Write(dst+1, mem.Read(src+1));
 }
 
 /* 0x47 MOVX to Indirect from Register */
 void cosproc::MOVXIR(uint16_t src){
-	uint16_t pre_dst = ((Read(pc+2) << 8) | Read(pc+3)); //Get the 16bit pre-destination
-	uint16_t dst = ((Read(pre_dst) << 8) | Read(pre_dst+1)); //Get the 16bit destination
+	uint16_t pre_dst = ((mem.Read(pc+2) << 8) | mem.Read(pc+3)); //Get the 16bit pre-destination
+	uint16_t dst = ((mem.Read(pre_dst) << 8) | mem.Read(pre_dst+1)); //Get the 16bit destination
 	int reg;
 	src % 2 ==0 ? reg = src : reg = src-1;
 
-	Write(dst, r[reg]);
-	Write(dst+1, r[reg+1]);
+	mem.Write(dst, r[reg]);
+	mem.Write(dst+1, r[reg+1]);
 }
 
 /* 0x48 MOVX to Register from Immediate */
 void cosproc::MOVXRI(uint16_t src){
-	int reg = Read(pc+3);
+	int reg = mem.Read(pc+3);
 	if(reg % 2 != 0){
 		reg -= 1;
 	}
 
-	r[reg] = Read(src);
-	r[reg+1] = Read(src+1);
+	r[reg] = mem.Read(src);
+	r[reg+1] = mem.Read(src+1);
 }
 
 /* 0x49-0x4A MOVX to Register from Absolute/Indirect */
 void cosproc::MOVXR(uint16_t src){
-	int reg = Read(pc+3);
+	int reg = mem.Read(pc+3);
 	if(reg % 2 != 0){
 		reg -= 1;
 	}
 
-	r[reg] = Read(src);
-	r[reg+1] = Read(src+1);
+	r[reg] = mem.Read(src);
+	r[reg+1] = mem.Read(src+1);
 }
 
 /* 0x4B MOVX to Register from Register */
 void cosproc::MOVXRR(uint16_t src){
-	int reg = Read(pc+2);
+	int reg = mem.Read(pc+2);
 	if(reg % 2 != 0){
 		reg -= 1;
 	}
@@ -880,7 +882,7 @@ void cosproc::MOVXRR(uint16_t src){
 
 /* 0x4C-0x4E SHLX Shift the 16-bit Accumulator left from Imm/Abs/Ind */
 void cosproc::SHLX(uint16_t src){
-	uint16_t shift = (Read(src) << 8 | Read(src+1));
+	uint16_t shift = (mem.Read(src) << 8 | mem.Read(src+1));
 	if(shift > 16){
 		shift = 16;
 	}
@@ -922,7 +924,7 @@ void cosproc::SHLXR(uint16_t src){
 
 /* 0x50-0x52 AND with Accumulator */
 void cosproc::AND(uint16_t src){
-	r[0] &= Read(src);
+	r[0] &= mem.Read(src);
 
 	//Set Zero
 	st[0] = r[0] == 0;
@@ -938,7 +940,7 @@ void cosproc::ANDR(uint16_t src){
 
 /* 0x54-0x56 OR with Accumulator */
 void cosproc::OR(uint16_t src){
-	r[0] |= Read(src);
+	r[0] |= mem.Read(src);
 
 	//Set Zero
 	st[0] = r[0] == 0;
@@ -954,7 +956,7 @@ void cosproc::ORR(uint16_t src){
 
 /* 0x58-0x5A XOR with Accumulator */
 void cosproc::XOR(uint16_t src){
-	r[0] ^= Read(src);
+	r[0] ^= mem.Read(src);
 
 	//Set Zero
 	st[0] = r[0] == 0;
@@ -970,7 +972,7 @@ void cosproc::XORR(uint16_t src){
 
 /* 0x5C-0x5E SHR Shift the Accumulator right from Imm/Abs/Ind */
 void cosproc::SHR(uint16_t src){
-	r[0] = r[0] >> Read(src);
+	r[0] = r[0] >> mem.Read(src);
 	
 	//Set Zero
 	st[0] = r[0] == 0;	
@@ -986,7 +988,7 @@ void cosproc::SHRR(uint16_t src){
 
 /* 0x60-0x62 CMP Compare with Accumulator */
 void cosproc::CMP(uint16_t src){
-	uint8_t temp = (unsigned int)Read(src);
+	uint8_t temp = (unsigned int)mem.Read(src);
 
 	CLF(0x00); //Clear Flags
 
@@ -1032,7 +1034,7 @@ void cosproc::CMPR(uint16_t src){
 
 /* 0x64-0x66 CMPX Compare with 16-bit Accumulator */
 void cosproc::CMPX(uint16_t src){
-	uint16_t temp = (Read(src) << 8) | Read(src+1);
+	uint16_t temp = (mem.Read(src) << 8) | mem.Read(src+1);
 	uint16_t uacc = (r[0] << 8) | r[1];
 	int16_t sacc = (r[0] << 8) | r[1];
 
@@ -1088,7 +1090,7 @@ void cosproc::CMPXR(uint16_t src){
 
 /* 0x6C-0x6E SHRX Shift the 16-bit Accumulator right from Imm/Abs/Ind */
 void cosproc::SHRX(uint16_t src){
-	uint16_t shift = (Read(src) << 8) | Read(src+1);
+	uint16_t shift = (mem.Read(src) << 8) | mem.Read(src+1);
 	uint16_t temp = ((r[0] << 8) | r[1]) >> shift;
 
 	r[0] = (temp & 0xFF00) >> 8;
@@ -1118,7 +1120,7 @@ void cosproc::SHRXR(uint16_t src){
 
 /* 0x70-0x72 JMP from Imm/Abs/Ind */
 void cosproc::JMP(uint16_t src){
-	pc = ((Read(src) << 8) | Read(src+1));
+	pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 }
 
 // 0x73 JMP from Reg
@@ -1135,7 +1137,7 @@ void cosproc::JMPR(uint16_t src){
 /* 0x74-0x76 JZS from Imm/Abs/Ind */
 void cosproc::JZS(uint16_t src){
 	if(st[0]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1158,7 +1160,7 @@ void cosproc::JZSR(uint16_t src){
 /* 0x78-0x7A JNZ from Imm/Abs/Ind */
 void cosproc::JNZ(uint16_t src){
 	if(!st[0]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1182,7 +1184,7 @@ void cosproc::JNZR(uint16_t src){
 /* 0x7C-0x7E JCS from Imm/Abs/Ind */
 void cosproc::JCS(uint16_t src){
 	if(st[2]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1206,7 +1208,7 @@ void cosproc::JCSR(uint16_t src){
 /* 0x80-0x82 JNC from Imm/Abs/Ind */
 void cosproc::JNC(uint16_t src){
 	if(!st[2]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1230,7 +1232,7 @@ void cosproc::JNCR(uint16_t src){
 /* 0x84-0x86 JOS from Imm/Abs/Ind */
 void cosproc::JOS(uint16_t src){
 	if(st[3]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1254,7 +1256,7 @@ void cosproc::JOSR(uint16_t src){
 /* 0x88-0x8A JNO from Imm/Abs/Ind */
 void cosproc::JNO(uint16_t src){
 	if(!st[3]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1278,7 +1280,7 @@ void cosproc::JNOR(uint16_t src){
 /* 0x8C-0x8E JNS from Imm/Abs/Ind */
 void cosproc::JNS(uint16_t src){
 	if(st[1]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1302,7 +1304,7 @@ void cosproc::JNSR(uint16_t src){
 /* 0x90-0x92 JNN from Imm/Abs/Ind */
 void cosproc::JNN(uint16_t src){
 	if(!st[1]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1326,7 +1328,7 @@ void cosproc::JNNR(uint16_t src){
 /* 0x94-0x96 JLS from Imm/Abs/Ind */
 void cosproc::JLS(uint16_t src){
 	if(st[4]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1350,7 +1352,7 @@ void cosproc::JLSR(uint16_t src){
 /* 0x98-0x9A JNL from Imm/Abs/Ind */
 void cosproc::JNL(uint16_t src){
 	if(!st[4]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1374,7 +1376,7 @@ void cosproc::JNLR(uint16_t src){
 /* 0x9C-0x9E JES from Imm/Abs/Ind */
 void cosproc::JES(uint16_t src){
 	if(st[6]){
-		pc = ((Read(src) << 8) | Read(src+1));
+		pc = ((mem.Read(src) << 8) | mem.Read(src+1));
 	}else{
 		pc += 3;
 	}
@@ -1469,7 +1471,7 @@ void cosproc::CEF(uint16_t src){
 
 /* 0xB0-0xB1 INC from Abs/Ind */
 void cosproc::INC(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 
 	unsigned int temp = data + 1;
 
@@ -1481,7 +1483,7 @@ void cosproc::INC(uint16_t src){
 	st[3] = ((data^temp)&(0x01^temp)&0x80) != 0;
 	
 	//Set Value
-	Write(src, temp & 0xFF);
+	mem.Write(src, temp & 0xFF);
 
 	//Set Zero
 	st[0] = (temp & 0xFF) == 0;
@@ -1509,8 +1511,8 @@ void cosproc::INCR(uint16_t src){
 
 /* 0xB3-0xB4 INCX from Abs/Ind */
 void cosproc::INCX(uint16_t src){
-	uint8_t dataHigh = Read(src);
-	uint8_t dataLow = Read(src+1);
+	uint8_t dataHigh = mem.Read(src);
+	uint8_t dataLow = mem.Read(src+1);
 	uint16_t data = ((dataHigh << 8) | dataLow);
 
 	unsigned int temp = data + 1;
@@ -1523,8 +1525,8 @@ void cosproc::INCX(uint16_t src){
 	st[3] = ((data^temp)&(0x0001^temp)&0x8000) != 0;
 
 	//Set Value
-	Write(src, (temp & 0xFF00) >> 8);
-	Write(src+1, temp & 0x00FF);
+	mem.Write(src, (temp & 0xFF00) >> 8);
+	mem.Write(src+1, temp & 0x00FF);
 
 	//Set Zero
 	st[0] = (temp & 0xFFFF) == 0;
@@ -1564,7 +1566,7 @@ void cosproc::INCXR(uint16_t src){
 
 /* 0xB6-0xB7 DEC from Abs/Ind */
 void cosproc::DEC(uint16_t src){
-	uint8_t data = Read(src);
+	uint8_t data = mem.Read(src);
 
 	unsigned int temp = data - 1;
 
@@ -1576,7 +1578,7 @@ void cosproc::DEC(uint16_t src){
 	st[3] = ((data^temp)&(0x01^temp)&0x80) != 0;
 	
 	//Set Value
-	Write(src, temp & 0xFF);
+	mem.Write(src, temp & 0xFF);
 
 	//Set Zero
 	st[0] = (temp & 0xFF) == 0;
@@ -1604,8 +1606,8 @@ void cosproc::DECR(uint16_t src){
 
 /* 0xB9-0xBA DECX from Abs/Ind */
 void cosproc::DECX(uint16_t src){
-	uint8_t dataHigh = Read(src);
-	uint8_t dataLow = Read(src+1);
+	uint8_t dataHigh = mem.Read(src);
+	uint8_t dataLow = mem.Read(src+1);
 	uint16_t data = ((dataHigh << 8) | dataLow);
 
 	unsigned int temp = data - 1;
@@ -1618,8 +1620,8 @@ void cosproc::DECX(uint16_t src){
 	st[3] = ((data^temp)&(0x0001^temp)&0x8000) != 0;
 
 	//Set Value
-	Write(src, (temp & 0xFF00) >> 8);
-	Write(src+1, temp & 0x00FF);
+	mem.Write(src, (temp & 0xFF00) >> 8);
+	mem.Write(src+1, temp & 0x00FF);
 
 	//Set Zero
 	st[0] = (temp & 0xFFFF) == 0;
@@ -1660,19 +1662,19 @@ void cosproc::DECXR(uint16_t src){
 /* Low Priority Interrupt */
 void cosproc::LPI(){
 	if(!st[5]){
-		Write(sp,((pc*0xFF00)>>8));
+		mem.Write(sp,((pc*0xFF00)>>8));
 		sp--;
-		Write(sp,(pc*0x00FF));
+		mem.Write(sp,(pc*0x00FF));
 		sp--;
-		pc = (Read(0xFFF2) << 8) & Read(0xFFF3);
+		pc = (mem.Read(0xFFF2) << 8) & mem.Read(0xFFF3);
 	}
 }
 
 /* High Priority Interrupt */
 void cosproc::HPI(){
-	Write(sp,((pc*0xFF00)>>8));
+	mem.Write(sp,((pc*0xFF00)>>8));
 	sp--;
-	Write(sp,(pc*0x00FF));
+	mem.Write(sp,(pc*0x00FF));
 	sp--;
-	pc = (Read(0xFFF2) << 8) & Read(0xFFF3);
+	pc = (mem.Read(0xFFF2) << 8) & mem.Read(0xFFF3);
 }

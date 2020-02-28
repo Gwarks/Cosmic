@@ -1,3 +1,4 @@
+#include <bits/stdint-uintn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -7,12 +8,12 @@
 #include <string>
 #include <array>
 
-class memory{
-    private:
-        std::array<uint8_t, 65536> mem{0};
-
+class cosmem{
     public:
+        cosmem();
         uint8_t Read(uint16_t);
-        void Write(uint8_t, uint16_t);
+        void Write(uint16_t, uint8_t);
+        //std::array<uint8_t, 65536> mem;
+        uint8_t mem[65536];
 
 };

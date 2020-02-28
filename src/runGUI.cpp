@@ -13,8 +13,6 @@ bool showGraphics = false;
 bool showDemo = false;
 
 
-
-
 //TODO: Fix this once proper memory is added
 void runGUI::LoadIntoMemory(const char *filepath)
 {
@@ -108,7 +106,7 @@ void runGUI::VideoOut(){
                         draw_list->AddRectFilled(ImVec2(x+i, y+j), ImVec2(x + size, y + size), col);
                     }
                 }
-                */
+            */
 
             ImGui::End();
 }

@@ -247,6 +247,10 @@ struct MemoryEditor
     void DrawContents(void* mem_data_void_ptr, size_t mem_size, size_t base_display_addr = 0x0000)
     {
         u8* mem_data = (u8*)mem_data_void_ptr;
+        for(int i = 0; i < 0xF; i++){
+            printf("%Xd ",mem_data[i]);
+        }
+        printf("\n");
         Sizes s;
         CalcSizes(s, mem_size, base_display_addr);
         ImGuiStyle& style = ImGui::GetStyle();
@@ -431,6 +435,7 @@ struct MemoryEditor
                         data_editing_addr_next = addr;
                     }
                 }
+                
             }
 
             if (OptShowAscii)
@@ -585,6 +590,10 @@ struct MemoryEditor
         }
 
         OptShowDataPreview = next_show_data_preview;
+
+        for(int i = 0; i < 0xF; i++){
+            printf("%Xd ",mem_data[i]);
+        }
 
         // Notify the main window of our ideal child content size (FIXME: we are missing an API to get the contents size from the child)
         ImGui::SetCursorPosX(s.WindowWidth);

@@ -393,6 +393,7 @@ int runGUI::run(){
                     case SDLK_SPACE:
                         if (ctrlState)
                         {
+                            sys.proc.cycle();
                             //debugPackage = proc.cycle();
                             //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
                         }
@@ -538,6 +539,7 @@ int runGUI::run(){
         ImGui::SetNextWindowPos(ImVec2(305, 30), ImGuiCond_Once);
         ImGui::Begin("Control");
         if (ImGui::Button("Step")){
+            sys.proc.cycle();
             //debugPackage = proc.cycle();
             //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
         }
@@ -589,6 +591,7 @@ int runGUI::run(){
         if (running){
             int i = 0;
             while (i < procFrequency / 60){
+                sys.proc.cycle();
                 //debugPackage = proc.cycle();
                 //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
                 i++;

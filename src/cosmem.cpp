@@ -1,5 +1,4 @@
 #include "cosmem.hpp"
-#include <bits/stdint-uintn.h>
 
 
 cosmem::cosmem(){

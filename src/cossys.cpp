@@ -16,5 +16,5 @@ uint8_t cossys::MemoryRead(uint16_t address)
 
 cossys::cossys(){
     memset(memory,0,sizeof(uint8_t)*65536);
-    proc = cosproc(&cossys::MemoryRead,&cossys::MemoryWrite);
+    proc = cosproc(MemoryRead,MemoryWrite);
 }

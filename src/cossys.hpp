@@ -19,12 +19,11 @@
 
 class cossys{
     public:
-        cosproc proc;
         uint8_t memory[65536];
-
+        cosproc proc;
         cossys();
         void MemoryWrite(uint16_t address, uint8_t value);
         uint8_t MemoryRead(uint16_t address);
-        
+
 
 };

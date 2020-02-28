@@ -9,7 +9,7 @@ static Logger debugLog;
 
 static char editorText[256 * 1000] = "";
 
-cossys system = cossys();
+cossys sys = cossys();
 
 /** Globals to show and hide windows **/
 bool showGraphics = false;
@@ -17,24 +17,13 @@ bool showDemo = false;
 
 
 
-void MemoryWrite(uint16_t address, uint8_t value)
-{
-    debugLog.AddLog("Wrote %X to %X\n", value, address);
-    memory[address] = value;
-}
-
-uint8_t MemoryRead(uint16_t address)
-{
-    debugLog.AddLog("READ: %X from %X\n", memory[address], address);
-    return memory[address];
-}
 
 //TODO: Fix this once proper memory is added
 void runGUI::LoadIntoMemory(const char *filepath)
 {
     std::ifstream File;
     File.open(filepath);
-    File.read((char *)memory, 65536);
+    File.read((char *)sys.memory, 65536);
     File.close();
 }
 
@@ -45,7 +34,7 @@ void runGUI::DumpMemory(const char *filepath)
     File.open(filepath);
     for (int i = 0; i < 65536; i++)
     {
-        File << memory[i];
+        File << sys.memory[i];
     }
 
     File.close();
@@ -92,11 +81,11 @@ void runGUI::Assemble(){
 }
 
 
-void runGUI::MemoryEditor(cosproc proc){
+void runGUI::MemoryEditor(cossys sys){
     ImGui::SetNextWindowSize(ImVec2(530, 280), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(305, 120), ImGuiCond_Once);
-    ramEdit.DrawWindow("Memory Editor", memory, sizeof(uint8_t) * 65536);
-    ramEdit.Highlight(proc.pc, proc.pc + 1, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75f, 0.75f, 0.25f, 1.0f)));
+    ramEdit.DrawWindow("Memory Editor", sys.memory, sizeof(uint8_t) * 65536);
+    ramEdit.Highlight(sys.proc.pc, sys.proc.pc + 1, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75f, 0.75f, 0.25f, 1.0f)));
 
 }
 
@@ -127,7 +116,7 @@ void runGUI::VideoOut(){
             ImGui::End();
 }
 
-void runGUI::Assembler(cosproc proc){
+void runGUI::Assembler(){
     ImGui::SetNextWindowPos(ImVec2(845, 30), ImGuiCond_Once);
     ImGui::Begin("Editor");
 
@@ -385,8 +374,8 @@ int runGUI::run(){
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     //System setup
-    cosproc proc = cosproc(MemoryRead, MemoryWrite);
-    cosproc::Debug debugPackage;
+    //cosproc proc = cosproc(MemoryRead, MemoryWrite);
+    //cosproc::Debug debugPackage;
     bool running = false;
     int procFrequency = 3000;
 
@@ -407,14 +396,14 @@ int runGUI::run(){
                     case SDLK_SPACE:
                         if (ctrlState)
                         {
-                            debugPackage = proc.cycle();
-                            debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
+                            //debugPackage = proc.cycle();
+                            //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
                         }
                         break;
                     case SDLK_r:
                         if (ctrlState)
                         {
-                            proc.reset();
+                            sys.proc.reset();
                             debugLog.Clear();
                             debugLog.AddLog("Processor Reset\n");
                         }
@@ -422,7 +411,7 @@ int runGUI::run(){
                     case SDLK_m:
                         if (ctrlState)
                         {
-                            memset(memory, 0, sizeof(memory));
+                            memset(sys.memory, 0, sizeof(sys.memory));
                             debugLog.AddLog("Memory Reset\n");
                         }
                         break;
@@ -500,25 +489,25 @@ int runGUI::run(){
         //Left Side
         ImGui::SetColumnWidth(0, 145);
         ImGui::Text("General Registers");
-        ImGui::Text("A: %X (%d) (%hhd)", proc.r[0], proc.r[0], proc.r[0]);
-        ImGui::Text("B: %X (%d) (%hhd)", proc.r[1], proc.r[1], proc.r[1]);
-        ImGui::Text("C: %X (%d) (%hhd)", proc.r[2], proc.r[2], proc.r[2]);
-        ImGui::Text("D: %X (%d) (%hhd)", proc.r[3], proc.r[3], proc.r[3]);
-        ImGui::Text("E: %X (%d) (%hhd)", proc.r[4], proc.r[4], proc.r[4]);
-        ImGui::Text("F: %X (%d) (%hhd)", proc.r[5], proc.r[5], proc.r[5]);
-        ImGui::Text("G: %X (%d) (%hhd)", proc.r[6], proc.r[6], proc.r[6]);
-        ImGui::Text("H: %X (%d) (%hhd)", proc.r[7], proc.r[7], proc.r[7]);
+        ImGui::Text("A: %X (%d) (%hhd)", sys.proc.r[0], sys.proc.r[0], sys.proc.r[0]);
+        ImGui::Text("B: %X (%d) (%hhd)", sys.proc.r[1], sys.proc.r[1], sys.proc.r[1]);
+        ImGui::Text("C: %X (%d) (%hhd)", sys.proc.r[2], sys.proc.r[2], sys.proc.r[2]);
+        ImGui::Text("D: %X (%d) (%hhd)", sys.proc.r[3], sys.proc.r[3], sys.proc.r[3]);
+        ImGui::Text("E: %X (%d) (%hhd)", sys.proc.r[4], sys.proc.r[4], sys.proc.r[4]);
+        ImGui::Text("F: %X (%d) (%hhd)", sys.proc.r[5], sys.proc.r[5], sys.proc.r[5]);
+        ImGui::Text("G: %X (%d) (%hhd)", sys.proc.r[6], sys.proc.r[6], sys.proc.r[6]);
+        ImGui::Text("H: %X (%d) (%hhd)", sys.proc.r[7], sys.proc.r[7], sys.proc.r[7]);
         //Right Side
         ImGui::NextColumn();
-        ImGui::Text("PC: %X (%d)", proc.pc, proc.pc);
-        ImGui::Text("SP: %X (%d)", proc.sp, proc.sp);
+        ImGui::Text("PC: %X (%d)", sys.proc.pc, sys.proc.pc);
+        ImGui::Text("SP: %X (%d)", sys.proc.sp, sys.proc.sp);
         ImGui::Columns(1);
         ImGui::Separator();
         ImGui::Columns(1, "16bitreg", false);
-        ImGui::Text("A/B: %X (%d) (%hd)", (proc.r[0] << 8 | proc.r[1]), (proc.r[0] << 8 | proc.r[1]), (short)(proc.r[0] << 8 | proc.r[1]));
-        ImGui::Text("C/D: %X (%d) (%hd)", (proc.r[2] << 8 | proc.r[3]), (proc.r[2] << 8 | proc.r[3]), (short)(proc.r[2] << 8 | proc.r[3]));
-        ImGui::Text("E/F: %X (%d) (%hd)", (proc.r[4] << 8 | proc.r[5]), (proc.r[4] << 8 | proc.r[5]), (short)(proc.r[4] << 8 | proc.r[5]));
-        ImGui::Text("G/H: %X (%d) (%hd)", (proc.r[6] << 8 | proc.r[7]), (proc.r[6] << 8 | proc.r[7]), (short)(proc.r[6] << 8 | proc.r[7]));
+        ImGui::Text("A/B: %X (%d) (%hd)", (sys.proc.r[0] << 8 | sys.proc.r[1]), (sys.proc.r[0] << 8 | sys.proc.r[1]), (short)(sys.proc.r[0] << 8 | sys.proc.r[1]));
+        ImGui::Text("C/D: %X (%d) (%hd)", (sys.proc.r[2] << 8 | sys.proc.r[3]), (sys.proc.r[2] << 8 | sys.proc.r[3]), (short)(sys.proc.r[2] << 8 | sys.proc.r[3]));
+        ImGui::Text("E/F: %X (%d) (%hd)", (sys.proc.r[4] << 8 | sys.proc.r[5]), (sys.proc.r[4] << 8 | sys.proc.r[5]), (short)(sys.proc.r[4] << 8 | sys.proc.r[5]));
+        ImGui::Text("G/H: %X (%d) (%hd)", (sys.proc.r[6] << 8 | sys.proc.r[7]), (sys.proc.r[6] << 8 | sys.proc.r[7]), (short)(sys.proc.r[6] << 8 | sys.proc.r[7]));
         ImGui::Columns(1);
 
         ImGui::Separator();
@@ -529,7 +518,7 @@ int runGUI::run(){
         ImGui::Columns(8, "statusregister", false);
         for (int i = 7; i >= 0; i--){
             ImGui::Text("%c", statusRegisterNames[i]);
-            if (proc.st[i]){
+            if (sys.proc.st[i]){
                 ImGui::Text("1");
             }
             else{
@@ -543,7 +532,7 @@ int runGUI::run(){
         *  Shows and allows the editing of
         *  Memory
         */
-        MemoryEditor(proc);
+        MemoryEditor(sys);
 
         /**  -= Control Window =-
         *   Control the Processor.
@@ -552,19 +541,19 @@ int runGUI::run(){
         ImGui::SetNextWindowPos(ImVec2(305, 30), ImGuiCond_Once);
         ImGui::Begin("Control");
         if (ImGui::Button("Step")){
-            debugPackage = proc.cycle();
-            debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
+            //debugPackage = proc.cycle();
+            //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
         }
         ImGui::SameLine();
         if (ImGui::Button("Processor Reset")){
-            proc.reset();
+            sys.proc.reset();
             debugLog.Clear();
             debugLog.AddLog("Processor Reset\n");
             running = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Memory Reset")){
-            memset(memory, 0, sizeof(memory));
+            memset(sys.memory, 0, sizeof(sys.memory));
             debugLog.AddLog("Memory Reset\n");
             running = false;
         }
@@ -597,14 +586,14 @@ int runGUI::run(){
         *   Allows the writing of Assembly Code
         *   And assembles it in the enviroment
         */
-       Assembler(proc);
+       Assembler();
 
         //Run if the run button it pushed
         if (running){
             int i = 0;
             while (i < procFrequency / 60){
-                debugPackage = proc.cycle();
-                debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
+                //debugPackage = proc.cycle();
+                //debugLog.AddLog("[%04X] %s\n", debugPackage.pc, debugPackage.instruction.mnemonic);
                 i++;
             }
         }

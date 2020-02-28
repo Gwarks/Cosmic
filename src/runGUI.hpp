@@ -21,7 +21,6 @@
     #include <GL/gl3w.h>
 #endif
 
-#include "cosproc.hpp"
 
 
 class runGUI{
@@ -31,8 +30,8 @@ class runGUI{
         void DumpMemory(const char *filepath);
         static void HelpMarker(const char *desc);
         void Assemble();
-        void MemoryEditor(cosproc proc);
-        void Assembler(cosproc proc);
+        void MemoryEditor(cossys sys);
+        void Assembler();
         void ShowTopMenu();
         void VideoOut();
 

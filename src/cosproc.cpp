@@ -13,8 +13,7 @@ cosproc::cosproc(cosmem mem){
 	Write = (BusWrite)w;
 	Read = (BusRead)r;
     */
-    this->mem = mem;
-
+    
 	//Fill InstructionSet with Undefined Opcodes so it don't crash no mo'
 	for(int i = 0;i <= 0xFF; i++){
 		InstructionSet[i] = (Instruction){&cosproc::IMP,&cosproc::UND,"Undefined",1};
@@ -233,8 +232,7 @@ cosproc::cosproc(cosmem mem){
 	reset();
 }
 
-void cosproc::reset()
-{
+void cosproc::reset(){
 	memset(r,0,sizeof(r));
 	pc = 0;
     sp = 0xC399;
@@ -243,9 +241,7 @@ void cosproc::reset()
 	return;
 }
 
-
-cosproc::Debug cosproc::cycle()
-{
+cosproc::Debug cosproc::cycle(){
 	uint8_t opcode = mem.Read(pc); //Fetch
 	Instruction currentInstruction = InstructionSet[opcode]; //Decode
 	execute(currentInstruction); //Execute
@@ -256,16 +252,14 @@ cosproc::Debug cosproc::cycle()
 	return debugPackage;
 }
 
-void cosproc::execute(Instruction i)
-{
+void cosproc::execute(Instruction i){
 	uint16_t src = (this->*i.addressing)();
 	(this->*i.opcode)(src);
 }
 
 /** -= ADDRESSING MODES =- **/
 
-uint16_t cosproc::IMP()
-{
+uint16_t cosproc::IMP(){
 	return 0;
 }
 

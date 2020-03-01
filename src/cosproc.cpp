@@ -8,11 +8,14 @@
 
 #include "cosproc.hpp"
 
-cosproc::cosproc(cosmem mem){
+cosproc::cosproc(cosmem memory){
     /*
 	Write = (BusWrite)w;
 	Read = (BusRead)r;
     */
+
+	mem = memory;
+
     
 	//Fill InstructionSet with Undefined Opcodes so it don't crash no mo'
 	for(int i = 0;i <= 0xFF; i++){
@@ -242,6 +245,16 @@ void cosproc::reset(){
 }
 
 cosproc::Debug cosproc::cycle(){
+	printf("DIRECT: \n");
+	for(int i = 0; i < 0xF; i++){
+		printf("%X ",mem.mem[i]);
+	}
+	printf("\n");
+	printf("READ: \n");
+	for(int i = 0; i < 0xF; i++){
+		printf("%X ",mem.Read(i));
+	}
+	printf("\n");
 	uint8_t opcode = mem.Read(pc); //Fetch
 	Instruction currentInstruction = InstructionSet[opcode]; //Decode
 	execute(currentInstruction); //Execute

@@ -18,7 +18,7 @@ void runGUI::LoadIntoMemory(const char *filepath)
 {
     std::ifstream File;
     File.open(filepath);
-    File.read((char *)sys.mem.mem, 65536); //TODO: Fix me to use the read and write
+    File.read((char *)sys.proc.mem.mem, 65536); //TODO: Fix me to use the read and write
     File.close();
 }
 
@@ -29,7 +29,7 @@ void runGUI::DumpMemory(const char *filepath)
     File.open(filepath);
     for (int i = 0; i < 65536; i++)
     {
-        File << sys.mem.mem[i]; //TODO: Fix me to use the read and write
+        File << sys.proc.mem.mem[i]; //TODO: Fix me to use the read and write
     }
 
     File.close();
@@ -79,7 +79,7 @@ void runGUI::Assemble(){
 void runGUI::MemoryEditor(cossys sys){
     ImGui::SetNextWindowSize(ImVec2(530, 280), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(305, 120), ImGuiCond_Once);
-    ramEdit.DrawWindow("Memory Editor", sys.mem.mem, sizeof(uint8_t) * 65536);
+    ramEdit.DrawWindow("Memory Editor", sys.proc.mem.mem, sizeof(uint8_t) * 65536);
     ramEdit.Highlight(sys.proc.pc, sys.proc.pc + 1, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75f, 0.75f, 0.25f, 1.0f)));
 
 }

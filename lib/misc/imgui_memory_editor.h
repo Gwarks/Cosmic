@@ -215,7 +215,7 @@ struct MemoryEditor
     }
 
     // Standalone Memory Editor window
-    void DrawWindow(const char* title, void* mem_data, size_t mem_size, size_t base_display_addr = 0x0000)
+    void DrawWindow(const char* title, uint8_t* mem_data, size_t mem_size, size_t base_display_addr = 0x0000)
     {
         Sizes s;
         CalcSizes(s, mem_size, base_display_addr);
@@ -244,9 +244,9 @@ struct MemoryEditor
     }
 
     // Memory Editor contents only
-    void DrawContents(void* mem_data_void_ptr, size_t mem_size, size_t base_display_addr = 0x0000)
+    void DrawContents(uint8_t* mem_data_void_ptr, size_t mem_size, size_t base_display_addr = 0x0000)
     {
-        u8* mem_data = (u8*)mem_data_void_ptr;
+        u8* mem_data = mem_data_void_ptr;
         /*
         for(int i = 0; i < 0xF; i++){
             printf("%Xd ",mem_data[i]);

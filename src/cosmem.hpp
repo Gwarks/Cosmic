@@ -7,12 +7,19 @@
 #include <string>
 #include <array>
 
+#include "imgui.h"
+#include "imgui_memory_editor.h"
+
 class cosmem{
     public:
+        static MemoryEditor ramEdit;
         cosmem();
         uint8_t Read(uint16_t);
         void Write(uint16_t, uint8_t);
-        //std::array<uint8_t, 65536> mem;
+        void editor(int pc);
         uint8_t mem[65536];
+        
+        //std::array<uint8_t, 65536> mem;
+        
 
 };

@@ -1,7 +1,7 @@
 #include "runGUI.hpp"
 
 
-static MemoryEditor ramEdit;
+
 static Logger debugLog;
 
 static char editorText[256 * 1000] = "";
@@ -79,8 +79,7 @@ void runGUI::Assemble(){
 void runGUI::MemoryEditor(cossys sys){
     ImGui::SetNextWindowSize(ImVec2(530, 280), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(305, 120), ImGuiCond_Once);
-    ramEdit.DrawWindow("Memory Editor", sys.proc.mem.mem, sizeof(uint8_t) * 65536);
-    ramEdit.Highlight(sys.proc.pc, sys.proc.pc + 1, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75f, 0.75f, 0.25f, 1.0f)));
+    sys.mem.editor(sys.proc.pc);
 
 }
 

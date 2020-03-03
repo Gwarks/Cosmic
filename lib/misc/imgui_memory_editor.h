@@ -248,6 +248,7 @@ struct MemoryEditor
     {
         u8* mem_data = mem_data_void_ptr;
         /*
+        printf("BEFORE:\n");
         for(int i = 0; i < 0xF; i++){
             printf("%Xd ",mem_data[i]);
         }
@@ -277,6 +278,8 @@ struct MemoryEditor
         const size_t visible_end_addr = clipper.DisplayEnd * Cols;
 
         bool data_next = false;
+        printf("%lu\n",DataEditingAddr);
+        printf("%d\n",ReadOnly);
 
         if (ReadOnly || DataEditingAddr >= mem_size)
             DataEditingAddr = (size_t)-1;
@@ -594,9 +597,12 @@ struct MemoryEditor
         OptShowDataPreview = next_show_data_preview;
 
         /*
+        printf("AFTER: \n");
         for(int i = 0; i < 0xF; i++){
             printf("%Xd ",mem_data[i]);
-        }*/
+        }
+        printf("\n");
+        */
 
         // Notify the main window of our ideal child content size (FIXME: we are missing an API to get the contents size from the child)
         ImGui::SetCursorPosX(s.WindowWidth);

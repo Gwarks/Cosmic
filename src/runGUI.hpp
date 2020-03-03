@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"

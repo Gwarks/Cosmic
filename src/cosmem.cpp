@@ -1,6 +1,8 @@
 #include "cosmem.hpp"
 
 
+MemoryEditor cosmem::ramEdit;
+
 cosmem::cosmem(){
     mem[0] = 0xF;
 }

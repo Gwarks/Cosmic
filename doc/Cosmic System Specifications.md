@@ -26,7 +26,7 @@ the same as default but only in red.
 Color provides true color in 64x64 pixels. For true color three bytes red, green and blue are needed but another padding byte is needed.
 
 ### 64x64-8x8_TrueColor
-This one provides a tiled map 64x64 of 8x8 pixel cells in True Color. The memory is seperated in 64 256byte long rows. Each row contains one map row and one tile. where the first line of the tile is stored in the first 32 bytes. The second  in next 32 bytes and so one. Each 4 bytes contains.
+This one provides a tiled map 64x64 of 8x8 pixel cells in True Color, which gives in total 512x512 pixels. The memory is seperated in 64 256byte long rows. Each row contains one map row and one tile. where the first line of the tile is stored in the first 32 bytes. The second  in next 32 bytes and so one. Each 4 bytes contains. The tile index gives the row where the tile is stored so there is a total of 64 different tiles.
 
 ```
      0        1         2       3         r=red
